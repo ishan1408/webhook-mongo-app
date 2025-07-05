@@ -10,7 +10,7 @@ const {
 router.post('/webhook/:clientId', handleWebhook);
 router.post('/leads/source/:sourceName', captureLead);
 
-router.get('/logs/call', getCallLogs);       // GET call logs
+router.get('/logs/call', getCallLogs);  
 router.get('/leads', getLeads);
 
 module.exports = router;
