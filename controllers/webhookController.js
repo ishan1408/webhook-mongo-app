@@ -1,42 +1,17 @@
 const CallLog = require('../models/CallLog');
 const Lead = require('../models/Lead_website');
-const getFormattedTimestamp = () => {
-  const now = new Date();
-  const pad = (n) => n.toString().padStart(2, '0');
-  const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-  const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())},${now.getMilliseconds()}`;
-  return `${date} ${time}`;
-};
+
 
 exports.handleWebhook = async (req, res) => {
-  const clientId = req.params.clientId?.toLowerCase() || 'unknown';
+  const source = req.params.sourceName || 'unknown';
   const payload = req.body || {};
-  const timestamp = getFormattedTimestamp();
-  const serverIP = '10.249.183.74';
 
   try {
-    // Save entire payload along with clientId
-    const callLog = await CallLog.create({ data: payload, clientId });
+    const lead = await Lead.create({ data: payload, source });
 
-    // Log the event (optional, adjust log format as needed)
-    console.log(`[${timestamp}] Received webhook from client: ${clientId}, saved log id: ${callLog._id}`);
-
-    return res.status(201).json({
-      success: true,
-      message: 'Webhook data stored successfully',
-      clientId,
-      logId: callLog._id,
-      server: serverIP
-    });
+    res.status(201).json({ success: true, message: 'Lead captured', lead });
   } catch (error) {
-    console.error(`[ERROR] Failed to store webhook data for client ${clientId}: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message,
-      clientId,
-      server: serverIP
-    });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
