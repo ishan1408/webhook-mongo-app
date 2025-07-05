@@ -3,11 +3,11 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const webhookRoutes = require('./routes/webhookRoutes');
+dotenv.config();
 
 const app = express();
 connectDB();
 
-dotenv.config();
 app.use(express.json());
 
 app.use('/api', webhookRoutes);

@@ -69,27 +69,14 @@ ${timestamp} [listener-default-7-C-1] INFO com.airtel.iq.online.usagecommon.serv
 };
 
 exports.captureLead = async (req, res) => {
-  const { name, phone, email, campaign } = req.body;
-  const source = req.params.source;
-
-  if (!phone || !name) {
-    return res.status(400).json({ success: false, message: 'Missing name or phone' });
-  }
+  const source = req.params.sourceName || 'unknown';
+  const payload = req.body || {};
 
   try {
-    const lead = await Lead.create({ name, phone, email, campaign, source });
+    const lead = await Lead.create({ data: payload, source });
 
-    // Push to Elision Dialer (Stage 2)
-    const dialerRes = await sendToElision(lead);
-
-    lead.pushedToDialer = true;
-    lead.dialerResponse = dialerRes;
-    await lead.save();
-
-    logger.info(`Lead pushed to Elision: ${lead.phone}`);
-    res.status(201).json({ success: true, message: 'Lead captured and pushed to dialer', lead });
+    res.status(201).json({ success: true, message: 'Lead captured', lead });
   } catch (error) {
-    logger.error('Lead capture failed: ' + error.message);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
