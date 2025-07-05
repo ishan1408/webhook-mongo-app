@@ -3,17 +3,18 @@ const Lead = require('../models/Lead_website');
 
 
 exports.handleWebhook = async (req, res) => {
-  const source = req.params.sourceName || 'unknown';
+  const clientId = req.params.clientId || 'unknown';
   const payload = req.body || {};
 
   try {
-    const lead = await Lead.create({ data: payload, source });
+    const callLog = await CallLog.create({ data: payload, clientId });
 
-    res.status(201).json({ success: true, message: 'Lead captured', lead });
+    res.status(201).json({ success: true, message: 'Call log captured', callLog });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
 
 
 exports.captureLead = async (req, res) => {
