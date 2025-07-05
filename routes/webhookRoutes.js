@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { handleWebhook } = require('../controllers/webhookController');
-const { captureLead } = require('../controllers/webhookController');
+const {
+  handleWebhook,
+  captureLead,
+  getCallLogs,
+  getLeads
+} = require('../controllers/webhookController');
 
 router.post('/webhook/:clientId', handleWebhook);
 router.post('/leads/source/:sourceName', captureLead);
+
+router.get('/logs/call', getCallLogs);       // GET call logs
+router.get('/leads', getLeads);
 
 module.exports = router;

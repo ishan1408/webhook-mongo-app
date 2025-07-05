@@ -1,8 +1,5 @@
-const CallLog = require('../models/CallLog_Airtel');
+const CallLog = require('../models/CallLog');
 const Lead = require('../models/Lead_website');
-const sendToElision = require('../services/elisionService');
-const logger = require('../utils/logger');
-
 const getFormattedTimestamp = () => {
   const now = new Date();
   const pad = (n) => n.toString().padStart(2, '0');
@@ -12,61 +9,37 @@ const getFormattedTimestamp = () => {
 };
 
 exports.handleWebhook = async (req, res) => {
-  const body = req.body;
   const clientId = req.params.clientId?.toLowerCase() || 'unknown';
-  const customerName = body.Customer_Name || body.customerId || 'unknown_customer';
-  const sessionId = body.Session_ID || 'no-session';
-  const logId = `${sessionId}_${clientId}_1`;
-  const topic = 'customer_cdr_default_topic_v2';
+  const payload = req.body || {};
   const timestamp = getFormattedTimestamp();
   const serverIP = '10.249.183.74';
-  const logPath = '/data/logs/iq-customer-cdr-publisher/iq-customer-cdr-publisher/logs/';
 
-  // Check if required fields are missing
-  const missingFields = !body.Customer_Name || !body.Session_ID || !body.Caller_ID;
-
-  // Create log string
-  const logResponse = `
-Results from ${serverIP} in ${logPath}:
-${timestamp} [listener-default-7-C-1] INFO com.airtel.iq.online.cdrpublisher.service.impl.PublisherServiceImpl - Client cdr publish request for customer:${customerName} with id:${logId} on topic : ${topic}
-${timestamp} [listener-default-7-C-1] INFO com.airtel.iq.online.cdrpublisher.adapter.impl.ClientAdapterImpl - Response time: 599 , Response : ClientResponse(response={"statusCode":400,"message":"Missing required fields or incorrect data format"}, responseCode=400 BAD_REQUEST, date=null) for clientMessage uuid:${logId}
-${timestamp} [listener-default-7-C-1] INFO com.airtel.iq.online.cdrpublisher.service.impl.PublisherServiceImpl - Failure in sending custom cdr : ${logId} to client: ${customerName} with response:ClientResponse(response={"statusCode":400,"message":"Missing required fields or incorrect data format"}, responseCode=400 BAD_REQUEST, date=null), adding to retry queue
-${timestamp} [listener-default-7-C-1] INFO com.airtel.iq.online.cdrpublisher.service.impl.PublisherServiceImpl - Publishing message in retry queue for destination :event->${topic} and id :${logId}
-${timestamp} [listener-default-7-C-1] INFO com.airtel.iq.online.usagecommon.service.impl.InstanceRetryQueueServiceImpl - Successfully pushed instance with id : ${logId} with delay 180 of retry count : 0
-`;
-
-  // If missing required fields, return full log as plain text response
-  if (missingFields) {
-    console.log(logResponse.trim());
-    return res.status(400).type('text/plain').send(logResponse.trim());
-  }
-
-  // Else try saving to DB
   try {
-    const callLog = new CallLog(body);
-    await callLog.save();
+    // Save entire payload along with clientId
+    const callLog = await CallLog.create({ data: payload, clientId });
+
+    // Log the event (optional, adjust log format as needed)
+    console.log(`[${timestamp}] Received webhook from client: ${clientId}, saved log id: ${callLog._id}`);
 
     return res.status(201).json({
-      statusCode: 201,
+      success: true,
       message: 'Webhook data stored successfully',
-      logId,
-      customer: customerName,
       clientId,
+      logId: callLog._id,
       server: serverIP
     });
   } catch (error) {
-    console.error(`[ERROR] Failed to store data for ${customerName}: ${error.message}`);
+    console.error(`[ERROR] Failed to store webhook data for client ${clientId}: ${error.message}`);
     return res.status(500).json({
-      statusCode: 500,
+      success: false,
       message: 'Internal server error',
       error: error.message,
-      logId,
-      customer: customerName,
       clientId,
       server: serverIP
     });
   }
 };
+
 
 exports.captureLead = async (req, res) => {
   const source = req.params.sourceName || 'unknown';
@@ -78,5 +51,24 @@ exports.captureLead = async (req, res) => {
     res.status(201).json({ success: true, message: 'Lead captured', lead });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+exports.getCallLogs = async (req, res) => {
+  try {
+    const logs = await CallLog.find().sort({ createdAt: -1 }); // latest first
+    res.status(200).json({ success: true, count: logs.length, logs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch call logs', error: error.message });
+  }
+};
+
+// GET all captured leads
+exports.getLeads = async (req, res) => {
+  try {
+    const leads = await Lead.find().sort({ createdAt: -1 }); // latest first
+    res.status(200).json({ success: true, count: leads.length, leads });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch leads', error: error.message });
   }
 };
