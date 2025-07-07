@@ -1,14 +1,15 @@
 const mongoose = require('mongoose');
 
 const StartupFloraSchema = new mongoose.Schema({
-  clientName: { type: String, default: null },
-  clientMobileNo: { type: String, default: null },
-  clientCompany: { type: String, default: null },
-  clientEmail: { type: String, default: null },
-  clientServices: { type: String, default: null },
+  fullName: { type: String, default: null },
+  phoneNumber: { type: String, default: null },
+  companyname: { type: String, default: null },
+  email: { type: String, default: null },
+  subject: { type: String, default: null },
+  message: { type: String, default: null },
   clientSubservices: { type: String, default: null },
   fromPage: { type: String, default: null },
-  clientFromSource: { type: String, default: null },
+  source: { type: String, default: null },
   clientFromService: { type: String, default: null },
   clientFromSubService: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
