@@ -21,18 +21,18 @@ exports.getAirtelLogs = async (req, res) => {
   }
 };
 
-exports.getAiSensyLogs = async (req, res) => {
-  try {
-    const entries = await AiSensy.find().sort({ createdAt: -1 }); // ✅ Query correct collection
-    res.status(200).json({ success: true, count: entries.length, entries });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch AiSensy logs',
-      error: error.message
-    });
-  }
-};
+// exports.getAiSensyLogs = async (req, res) => {
+//   try {
+//     const entries = await AiSensy.find().sort({ createdAt: -1 }); // ✅ Query correct collection
+//     res.status(200).json({ success: true, count: entries.length, entries });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to fetch AiSensy logs',
+//       error: error.message
+//     });
+//   }
+// };
 
 exports.getGeneralWebhooks = async (req, res) => {
   try {
@@ -112,14 +112,14 @@ exports.captureAirtel = async (req, res) => {
   }
 };
 
-exports.captureAiSensy = async (req, res) => {
-  try {
-    const entry = await AiSensy.create({ data: req.body });
-    res.status(201).json({ success: true, message: 'Elision log saved', entry });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
-  }
-};
+// exports.captureAiSensy = async (req, res) => {
+//   try {
+//     const entry = await AiSensy.create({ data: req.body });
+//     res.status(201).json({ success: true, message: 'Elision log saved', entry });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: 'Server error', error: error.message });
+//   }
+// };
 
 exports.getGeneralWebhooks = async (req, res) => {
   try {
