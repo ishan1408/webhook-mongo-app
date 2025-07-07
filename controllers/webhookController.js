@@ -58,14 +58,16 @@ exports.handleGeneralWebhook = async (req, res) => {
 exports.captureStartupFlora = async (req, res) => {
   try {
     const {
-      clientName,
-      clientMobileNo,
-      clientCompany,
-      clientEmail,
+      fullName,
+      phoneNumber,
+      companyname,
+      email,
       clientServices,
       clientSubservices,
       fromPage,
-      clientFromSource,
+      source,
+      message,
+      subject,
       clientFromService,
       clientFromSubService,
       createdDate,
@@ -78,14 +80,16 @@ exports.captureStartupFlora = async (req, res) => {
     } = req.body;
 
     const entry = await StartupFlora.create({
-      clientName,
-      clientMobileNo,
-      clientCompany,
-      clientEmail,
+      fullName,
+      phoneNumber,
+      companyname,
+      email,
       clientServices,
       clientSubservices,
+      subject,
+      message,
       fromPage,
-      clientFromSource,
+      source,
       clientFromService,
       clientFromSubService,
       createdDate,
