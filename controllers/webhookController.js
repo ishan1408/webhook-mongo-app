@@ -6,7 +6,7 @@ exports.handleWebhook = async (req, res) => {
   const payload = req.body || {};
 
   try {
-    const callLog = await CallLog.create({ data: payload, clientId });
+    const callLog = await CallLog.create({ data: payload });
 
     res.status(201).json({ success: true, message: 'Call log captured', callLog });
   } catch (error) {
